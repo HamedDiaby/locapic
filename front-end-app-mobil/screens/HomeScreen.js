@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import { StyleSheet, ImageBackground } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { StyleSheet, ImageBackground, AsyncStorage, Text } from 'react-native';
 
 import {Button, Input} from 'react-native-elements'
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -9,10 +9,17 @@ import {connect} from 'react-redux';
 function HomeScreen({ navigation, onSubmitPseudo }) {
     const [pseudo, setPseudo] = useState('');
     
-    return (
-    <ImageBackground source={require('../assets/home.jpg')} style={styles.container}>
+    useEffect( ()=>{
+      AsyncStorage.getItem("firstName", 
+      function(error, data){
+        setPseudo(data);
+      });
+    }, []);
 
-        <Input
+    var inputPseudo;
+
+    if(!pseudo){
+      inputPseudo = <Input
             containerStyle = {{marginBottom: 25, width: '70%'}}
             inputStyle={{marginLeft: 10}}
             placeholder='John'
@@ -25,6 +32,14 @@ function HomeScreen({ navigation, onSubmitPseudo }) {
             }
             onChangeText={(val) => setPseudo(val)}
         />
+    } else {
+      inputPseudo = <Text h4 style={{marginBottom:25, color:'#FFFFFF'}}> Welcome back {pseudo} </Text>;
+    }
+
+    return (
+    <ImageBackground source={require('../assets/home.jpg')} style={styles.container}>
+
+        {inputPseudo}
 
         <Button
             icon={
@@ -37,7 +52,11 @@ function HomeScreen({ navigation, onSubmitPseudo }) {
 
             title="Go to Map"
             type="solid"
-            onPress={() => {onSubmitPseudo(pseudo); navigation.navigate('Map')}}
+            onPress={() => {
+              onSubmitPseudo(pseudo);
+              AsyncStorage.setItem("firstName", pseudo);
+              navigation.navigate('Map')
+            }}
         />
 
     </ImageBackground>
@@ -55,7 +74,7 @@ const styles = StyleSheet.create({
 
 function mapDispatchToProps(dispatch) {
     return {
-      onSubmitPseudo: function(pseudo) { 
+      onSubmitPseudo: function(pseudo) {
         dispatch( {type: 'savePseudo', pseudo: pseudo }) 
       }
     }

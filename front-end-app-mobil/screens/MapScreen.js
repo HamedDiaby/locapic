@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { View } from 'react-native';
+import { View, AsyncStorage } from 'react-native';
 import {Button, Overlay, Input} from 'react-native-elements'
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -33,6 +33,14 @@ export default function MapScreen() {
       }
     }
     askPermissions();
+
+    AsyncStorage.getItem("listPOI", 
+      function(error, data){
+        if(data){
+          var poi = JSON.parse(data);
+          setListPOI(poi);
+        }
+    });
   }, []);
 
   var selectPOI = (e) => {
@@ -44,7 +52,10 @@ export default function MapScreen() {
   }
 
   var handleSubmit = () => {
-    setListPOI([...listPOI, {longitude: tempPOI.longitude, latitude: tempPOI.latitude, titre: titrePOI, description: descPOI } ]);
+    var copyListPOI = [...listPOI, {longitude: tempPOI.longitude, latitude: tempPOI.latitude, titre: titrePOI, description: descPOI } ];
+    AsyncStorage.setItem("listPOI", JSON.stringify(copyListPOI) );
+    setListPOI(copyListPOI);
+
     setIsVisible(false);
     setTempPOI();
     setDescPOI();
